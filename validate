@@ -1,0 +1,47 @@
+parameters:
+  - name: TerraformTarget
+    displayName: "Terraform Target (Optional)"
+    type: string
+    default: ""
+
+variables:
+  - group: Terraform_Cloud  # Contains Terraform API token and other secrets
+
+trigger: none
+
+resources:
+  repositories:
+    - repository: pipelines
+      type: git
+      name:X/pipelines
+      ref: develop
+
+steps:
+  # Step 1: Install Terraform CLI
+  - task: UseTerraform@0
+    inputs:
+      command: 'install'
+      terraformVersion: '1.9.6'
+
+  # Step 2: Validate and Init for Each Module
+  - script: |
+      # Navigate to the modules directory
+      cd modules
+
+      # Loop through each subdirectory
+      for module in $(ls -d */); do
+        echo "Processing module: $module"
+
+        # Navigate into the module directory
+        cd $module
+
+        # Run Terraform Init
+        terraform init -input=false
+
+        # Run Terraform Validate
+        terraform validate
+
+        # Navigate back to the modules directory
+        cd ..
+      done
+    displayName: "Terraform Init and Validate for All Modules"
