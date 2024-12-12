@@ -82,3 +82,27 @@ Migration Plan for Breaking Changes
 Conclusion
 
 This versioning strategy ensures Terraform modules remain stable and predictable for users while allowing room for growth and innovation. By adhering to Semantic Versioning, users can confidently adopt new features or updates without unexpected disruptions.
+
+
+
+# Changelog
+
+## [Version] - YYYY-MM-DD
+### Added
+- [New Feature or Functionality] Brief description of the new feature.
+
+### Changed
+- [Modified Feature or Functionality] Brief description of the change.
+- [Breaking Change] Clear explanation of what changed and how to migrate.
+
+### Deprecated
+- [Deprecated Feature or Functionality] Indicate features marked for removal in future versions.
+
+### Removed
+- [Removed Feature or Functionality] Indicate features that were removed in this version.
+
+### Fixed
+- [Bug Fix] Brief description of the fixed issue.
+
+### Security
+- [Security Fix] Description of any resolved security vulnerabilities.
