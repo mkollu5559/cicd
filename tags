@@ -1,6 +1,14 @@
+trigger:
+  branches:
+    include:
+      - develop  # Trigger pipeline only on merges to the develop branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
 steps:
 - checkout: self
-  persistCredentials: true
+  persistCredentials: true  # Retains credentials for git operations
 
 - script: |
     # Read `tags.tfvars` line by line
@@ -19,10 +27,10 @@ steps:
           git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
           git push origin "$TAG_NAME"
 
-          # Reset variables for next pair
+          # Reset variables for the next pair
           TAG_NAME=""
           TAG_COMMENT=""
         fi
       fi
     done < tags.tfvars
-  displayName: 'Process Multiple Tags from tags.tfvars'
+  displayName: 'Create and Push Tags from tags.tfvars'
