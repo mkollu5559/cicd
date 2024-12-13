@@ -1,0 +1,28 @@
+steps:
+- checkout: self
+  persistCredentials: true
+
+- script: |
+    # Read `tags.tfvars` line by line
+    while read -r line; do
+      # Match tag_name and tag_comment dynamically
+      if [[ "$line" == tag_name* ]]; then
+        TAG_NAME=$(echo $line | cut -d '"' -f2)
+      elif [[ "$line" == tag_comment* ]]; then
+        TAG_COMMENT=$(echo $line | cut -d '"' -f2)
+
+        # Ensure both TAG_NAME and TAG_COMMENT are set
+        if [ -n "$TAG_NAME" ] && [ -n "$TAG_COMMENT" ]; then
+          echo "Creating tag $TAG_NAME with comment: $TAG_COMMENT"
+
+          # Create and push the tag
+          git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
+          git push origin "$TAG_NAME"
+
+          # Reset variables for next pair
+          TAG_NAME=""
+          TAG_COMMENT=""
+        fi
+      fi
+    done < tags.tfvars
+  displayName: 'Process Multiple Tags from tags.tfvars'
