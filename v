@@ -106,3 +106,58 @@ This versioning strategy ensures Terraform modules remain stable and predictable
 
 ### Security
 - [Security Fix] Description of any resolved security vulnerabilities.
+
+
+# Changelog
+
+## [2.0.0] - 2024-12-10
+### Changed
+- **Breaking Change:** Renamed variable `instance_type` to `vm_type`. Update your configuration accordingly.
+- Changed the default value of `enable_logging` to `true`.
+
+### Removed
+- Removed deprecated variable `old_network_id`.
+
+## [1.5.0] - 2024-11-01
+### Added
+- Added support for new optional variable `enable_monitoring`.
+- New output `monitoring_endpoint` for integration.
+
+### Deprecated
+- Deprecated variable `legacy_subnet_id` in favor of `subnet_id`.
+
+## [1.4.1] - 2024-10-15
+### Fixed
+- Resolved an issue with incorrect IAM role attachments for Lambda policies.
+
+## [1.4.0] - 2024-10-01
+### Added
+- Added support for tagging resources with the `tags` variable.
+
+---
+
+## Best Practices for Maintaining `CHANGELOG.md`
+
+1. **Update for Every Release**
+   - Document every update, even minor changes or fixes.
+   - Follow the semantic versioning pattern for each release.
+
+2. **Highlight Breaking Changes**
+   - Clearly mark and explain breaking changes under the **Changed** or **Removed** sections.
+   - Include migration instructions for users.
+
+3. **Use Markdown Formatting**
+   - Use headers (`##`, `###`) to structure entries for readability.
+
+4. **Automate Where Possible**
+   - Use tools like [`git-chglog`](https://github.com/git-chglog/git-chglog) to generate changelogs from commit messages.
+
+5. **Provide Context**
+   - Include links to related pull requests, issues, or documentation for more details.
+
+---
+
+## Conclusion
+
+A well-maintained `CHANGELOG.md` file ensures users can easily understand updates and adopt new module versions with confidence. By adhering to these guidelines, you can streamline version tracking and enhance user trust.
+
