@@ -34,3 +34,34 @@ steps:
       fi
     done < tags.tfvars
   displayName: 'Create and Push Tags from tags.tfvars'
+
+
+
+
+
+
+
+
+
+
+
+# Read tags.tfvars line by line
+ls -art
+ls -art
+while read -r line; do
+    if [[ "$line" == tag_name* ]]; then
+        TAG_NAME=$(echo $line | cut -d '"' -f2)
+    elif [[ "$line" == tag_comment* ]]; then
+        TAG_COMMENT=$(echo $line | cut -d '"' -f2)
+    fi
+
+    if [[ -n "$TAG_NAME" && -n "$TAG_COMMENT" ]]; then
+        echo "Creating tag $TAG_NAME with comment: $TAG_COMMENT"
+        git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
+        git push origin "$TAG_NAME"
+
+        TAG_NAME=""
+        TAG_COMMENT=""
+    fi
+done < tags.tfvars
+
