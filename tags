@@ -18,14 +18,16 @@ stages:
 
           # Step 2: Read tag and comment from tag.txt
           - script: |
-              TAG_NAME=$(sed -n '1p' tag.txt)
-              TAG_COMMENT=$(sed -n '2p' tag.txt)
+              # Extract tag_name and tag_comments from tag.txt
+              TAG_NAME=$(grep 'tag_name' tag.txt | cut -d '=' -f2 | tr -d ' "')
+              TAG_COMMENT=$(grep 'tag_comments' tag.txt | cut -d '=' -f2 | tr -d ' "')
 
               if [[ -z "$TAG_NAME" || -z "$TAG_COMMENT" ]]; then
-                echo "Error: Tag name or comment is missing in tag.txt."
+                echo "Error: tag_name or tag_comments is missing in tag.txt."
                 exit 1
               fi
 
+              # Export the variables for later steps
               echo "##vso[task.setvariable variable=TAG_NAME]$TAG_NAME"
               echo "##vso[task.setvariable variable=TAG_COMMENT]$TAG_COMMENT"
             displayName: "Read tag and comment"
