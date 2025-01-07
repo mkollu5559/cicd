@@ -8,7 +8,7 @@ stages:
     displayName: "Create Git Tag"
     jobs:
       - job: CreateTagJob
-        displayName: "Create and Push Git Tag"
+        displayName: "Check and Push Git Tag"
         pool:
           vmImage: 'ubuntu-latest'
 
@@ -16,12 +16,13 @@ stages:
           # Step 1: Check out the code
           - task: Checkout@1
 
-          # Step 2: Read tag and comment from tag.txt
+          # Step 2: Parse the latest tag_name and tag_comments
           - script: |
-              # Extract tag_name and tag_comments from tag.txt
-              TAG_NAME=$(grep 'tag_name' tag.txt | cut -d '=' -f2 | tr -d ' "')
-              TAG_COMMENT=$(grep 'tag_comments' tag.txt | cut -d '=' -f2 | tr -d ' "')
+              # Get the last occurrence of tag_name and tag_comments
+              TAG_NAME=$(grep '^tag_name' tag.txt | tail -1 | cut -d '=' -f2 | tr -d ' "')
+              TAG_COMMENT=$(grep '^tag_comments' tag.txt | tail -1 | cut -d '=' -f2 | tr -d ' "')
 
+              # Validate required fields
               if [[ -z "$TAG_NAME" || -z "$TAG_COMMENT" ]]; then
                 echo "Error: tag_name or tag_comments is missing in tag.txt."
                 exit 1
@@ -30,17 +31,24 @@ stages:
               # Export the variables for later steps
               echo "##vso[task.setvariable variable=TAG_NAME]$TAG_NAME"
               echo "##vso[task.setvariable variable=TAG_COMMENT]$TAG_COMMENT"
-            displayName: "Read tag and comment"
+            displayName: "Read the latest tag and comment"
 
-          # Step 3: Set up Git for tagging
+          # Step 3: Check if the tag already exists and fail the pipeline
           - script: |
-              git config user.name "Your Name"
-              git config user.email "your-email@example.com"
-            displayName: "Set up Git"
+              TAG_NAME=$(echo $(TAG_NAME))
+              if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+                echo "Error: Tag '$TAG_NAME' already exists in the repository."
+                exit 1
+              else
+                echo "Tag '$TAG_NAME' does not exist. Proceeding with tag creation."
+              fi
+            displayName: "Check if tag exists"
 
           # Step 4: Create the tag
           - script: |
-              git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
+              git config user.name "Azure DevOps"
+              git config user.email "noreply@azuredevops.com"
+              git tag -a "$TAG_NAME" -m "$(TAG_COMMENT)"
             displayName: "Create Git Tag"
 
           # Step 5: Push the tag to the remote repository
