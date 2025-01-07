@@ -1,32 +1,47 @@
-# Set git user credentials for Azure Pipelines
-git config --global user.email "azuredevops@pipeline.com"
-git config --global user.name "Azure Pipelines"
+trigger:
+  branches:
+    include:
+      - develop
 
-# Ensure we are on the correct branch
-git checkout $(Build.SourceBranchName)
-echo "Switched to branch: $(Build.SourceBranchName)"
+stages:
+  - stage: CreateTag
+    displayName: "Create Git Tag"
+    jobs:
+      - job: CreateTagJob
+        displayName: "Create and Push Git Tag"
+        pool:
+          vmImage: 'ubuntu-latest'
 
-# Debugging: Confirm working directory and remotes
-echo "Current working directory:"
-pwd
-echo "Listing files:"
-ls -l
-echo "Git remote configuration:"
-git remote -v
+        steps:
+          # Step 1: Check out the code
+          - task: Checkout@1
 
-# Process tags.tfvars and create tags
-while read -r line; do
-    if [[ "$line" == tag_name* ]]; then
-        TAG_NAME=$(echo $line | cut -d '"' -f2)
-    elif [[ "$line" == tag_comment* ]]; then
-        TAG_COMMENT=$(echo $line | cut -d '"' -f2)
-    fi
+          # Step 2: Read tag and comment from tag.txt
+          - script: |
+              TAG_NAME=$(sed -n '1p' tag.txt)
+              TAG_COMMENT=$(sed -n '2p' tag.txt)
 
-    if [[ -n "$TAG_NAME" && -n "$TAG_COMMENT" ]]; then
-        echo "Creating tag $TAG_NAME with comment: $TAG_COMMENT"
-        git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
-        git push origin "$TAG_NAME"
-        TAG_NAME=""
-        TAG_COMMENT=""
-    fi
-done < tags.tfvars
+              if [[ -z "$TAG_NAME" || -z "$TAG_COMMENT" ]]; then
+                echo "Error: Tag name or comment is missing in tag.txt."
+                exit 1
+              fi
+
+              echo "##vso[task.setvariable variable=TAG_NAME]$TAG_NAME"
+              echo "##vso[task.setvariable variable=TAG_COMMENT]$TAG_COMMENT"
+            displayName: "Read tag and comment"
+
+          # Step 3: Set up Git for tagging
+          - script: |
+              git config user.name "Your Name"
+              git config user.email "your-email@example.com"
+            displayName: "Set up Git"
+
+          # Step 4: Create the tag
+          - script: |
+              git tag -a "$TAG_NAME" -m "$TAG_COMMENT"
+            displayName: "Create Git Tag"
+
+          # Step 5: Push the tag to the remote repository
+          - script: |
+              git push origin "$TAG_NAME"
+            displayName: "Push Git Tag"
