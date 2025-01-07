@@ -54,3 +54,25 @@ stages:
           - script: |
               git push origin "$LATEST_TAG"
             displayName: "Push Git Tag"
+
+=======================
+
+
+# Extract the latest tag_name from tags.txt
+LATEST_TAG=$(grep '^tag_name' tags.txt | cut -d '=' -f2 | tr -d ' "' | sort -V | tail -1)
+
+# Extract the corresponding tag_comments for the latest tag_name
+TAG_COMMENT=$(awk -v tag="$LATEST_TAG" '
+  $0 ~ "tag_name" && $0 ~ tag {getline; if ($0 ~ "tag_comments") {print $3}}
+' tags.txt | tr -d '"')
+
+# Debugging outputs
+echo "LATEST_TAG: $LATEST_TAG"
+echo "TAG_COMMENT: $TAG_COMMENT"
+
+# Validate the output
+if [[ -z "$LATEST_TAG" || -z "$TAG_COMMENT" ]]; then
+  echo "Error: Unable to extract tag_name or tag_comments."
+  exit 1
+fi
+
